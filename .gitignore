@@ -1,0 +1,21 @@
+# Go
+/backend/server
+/backend/*.exe
+/backend/*.test
+/backend/vendor/
+/backend/go.work
+
+# Node / Frontend
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.env.local
+/frontend/.npm/
+
+# System / IDE
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# Environment Variables
+.env
