@@ -6,6 +6,7 @@ services:
     environment:
       - PORT=8080
       - ALPHAVANTAGE_API_KEY=${ALPHAVANTAGE_API_KEY}
+      - FINNHUB_API_KEY=${FINNHUB_API_KEY}
     restart: always
 
   frontend:

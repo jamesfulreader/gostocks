@@ -15,14 +15,25 @@ func main() {
 	_ = config.LoadEnv()
 
 	// Select provider based on env
-	apiKey := os.Getenv("ALPHAVANTAGE_API_KEY")
+	alphaKey := os.Getenv("ALPHAVANTAGE_API_KEY")
+	finnhubKey := os.Getenv("FINNHUB_API_KEY")
+
 	var provider stocks.Provider
-	if apiKey != "" {
-		provider = stocks.NewAlphaVantage(apiKey, nil)
+
+	if alphaKey != "" && finnhubKey != "" {
+		alpha := stocks.NewAlphaVantage(alphaKey, nil)
+		finnhub := stocks.NewFinnhub(finnhubKey, nil)
+		provider = stocks.NewFallback(alpha, finnhub)
+		log.Println("Using Fallback provider (Primary: Alpha Vantage, Secondary: Finnhub)")
+	} else if alphaKey != "" {
+		provider = stocks.NewAlphaVantage(alphaKey, nil)
 		log.Println("Using Alpha Vantage provider")
+	} else if finnhubKey != "" {
+		provider = stocks.NewFinnhub(finnhubKey, nil)
+		log.Println("Using Finnhub provider")
 	} else {
 		provider = stocks.NewMock()
-		log.Println("Using Mock provider (set ALPHAVANTAGE_API_KEY to use Alpha Vantage)")
+		log.Println("Using Mock provider (set ALPHAVANTAGE_API_KEY and/or FINNHUB_API_KEY to use real data)")
 	}
 
 	addr := ":" + config.GetenvDefault("PORT", "8080")
