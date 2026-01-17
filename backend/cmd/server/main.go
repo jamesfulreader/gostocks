@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/jamesfulreader/gostocks/internal/database"
 	"github.com/jamesfulreader/gostocks/internal/httpserver"
 	"github.com/jamesfulreader/gostocks/internal/stocks"
 	"github.com/jamesfulreader/gostocks/pkg/config"
@@ -13,6 +14,14 @@ import (
 func main() {
 	// Load environment from .env if present
 	_ = config.LoadEnv()
+
+	// Initialize Database
+	db := database.New()
+	defer db.Close()
+
+	// Check DB Health
+	health := db.Health()
+	log.Printf("Database health: %v", health)
 
 	// Select provider based on env
 	alphaKey := os.Getenv("ALPHAVANTAGE_API_KEY")
