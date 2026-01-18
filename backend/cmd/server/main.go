@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/jamesfulreader/gostocks/internal/database"
 	"github.com/jamesfulreader/gostocks/internal/httpserver"
@@ -44,6 +45,11 @@ func main() {
 		provider = stocks.NewMock()
 		log.Println("Using Mock provider (set ALPHAVANTAGE_API_KEY and/or FINNHUB_API_KEY to use real data)")
 	}
+
+	// Wrap with Caching Provider
+	// Use a 5-minute TTL
+	provider = stocks.NewCachedProvider(provider, db, 5*time.Minute)
+	log.Println("Enabled Database Caching for Stock Provider")
 
 	addr := ":" + config.GetenvDefault("PORT", "8080")
 

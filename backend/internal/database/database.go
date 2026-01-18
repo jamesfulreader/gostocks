@@ -14,6 +14,12 @@ type Service interface {
 	Health() map[string]string
 	Close()
 	GetPool() *pgxpool.Pool
+
+	// Repository Methods
+	UpsertSymbol(ctx context.Context, sym Symbol) error
+	InsertStockPrice(ctx context.Context, price StockPrice) error
+	GetLatestStockPrice(ctx context.Context, symbol string) (*StockPrice, error)
+	GetAveragePrice(ctx context.Context, symbol string, since time.Time) (float64, error)
 }
 
 type service struct {
