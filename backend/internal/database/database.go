@@ -28,24 +28,26 @@ func New() Service {
 		return dbInstance
 	}
 
+	// Default to docker-compose service name "db"
+	dbHost := "db"
+	if host := os.Getenv("DB_HOST"); host != "" {
+		dbHost = host
+	}
+
+	dbPort := "5432"
+	if port := os.Getenv("DB_PORT"); port != "" {
+		dbPort = port
+	}
+
 	databaseUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
 		os.Getenv("POSTGRES_USER"),
 		os.Getenv("POSTGRES_PASSWORD"),
-		"db", // service name in docker-compose
-		"5432",
+		dbHost,
+		dbPort,
 		os.Getenv("POSTGRES_DB"),
 	)
 
-	// For local development outside docker, we might need localhost
-	if os.Getenv("DB_HOST") != "" {
-		databaseUrl = fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-			os.Getenv("POSTGRES_USER"),
-			os.Getenv("POSTGRES_PASSWORD"),
-			os.Getenv("DB_HOST"),
-			"5432",
-			os.Getenv("POSTGRES_DB"),
-		)
-	}
+	log.Printf("Connecting to database at %s:%s", dbHost, dbPort)
 
 	config, err := pgxpool.ParseConfig(databaseUrl)
 	if err != nil {
@@ -90,4 +92,5 @@ func (s *service) Health() map[string]string {
 func (s *service) Close() {
 	log.Printf("Disconnected from database: %s", os.Getenv("POSTGRES_DB"))
 	s.pool.Close()
+	dbInstance = nil
 }
