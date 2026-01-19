@@ -53,7 +53,7 @@ func main() {
 
 	addr := ":" + config.GetenvDefault("PORT", "8080")
 
-	srv := httpserver.New(provider, addr)
+	srv := httpserver.New(provider, db.GetPool(), addr)
 	log.Printf("HTTP server listening on %s\n", addr)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("server error: %v", err)
