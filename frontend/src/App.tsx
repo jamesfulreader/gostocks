@@ -1,20 +1,41 @@
-import { useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import DashboardPage from './pages/DashboardPage'
+import { useState, useEffect } from 'react'
 import { getQuote, getIntraday } from './services/api'
 import type { Quote, Candle } from './types'
 
-export default function App() {
-  const [symbol, setSymbol] = useState('AAPL')
+import { type ReactNode } from 'react'
+
+function ProtectedRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = useAuth()
+  if (!isAuthenticated) return <Navigate to="/login" />
+  return children
+}
+
+function StockView() {
+  const { symbol: routeSymbol } = useParams()
+  const [symbol, setSymbol] = useState(routeSymbol || 'AAPL')
   const [quote, setQuote] = useState<Quote | null>(null)
   const [candles, setCandles] = useState<Candle[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const run = async () => {
+  useEffect(() => {
+    if (routeSymbol) {
+        setSymbol(routeSymbol)
+        run(routeSymbol)
+    }
+  }, [routeSymbol])
+
+  const run = async (sym: string) => {
     setLoading(true); setError(null)
     try {
       const [q, c] = await Promise.all([
-        getQuote(symbol),
-        getIntraday(symbol, '1min')
+        getQuote(sym),
+        getIntraday(sym, '1min')
       ])
       setQuote(q)
       setCandles(c)
@@ -26,10 +47,11 @@ export default function App() {
   return (
     <div style={{ padding: 24, fontFamily: 'system-ui, sans-serif', maxWidth: 900, margin: '0 auto' }}>
       <h1>GoStocks</h1>
+      <Link to="/" style={{display: 'inline-block', marginBottom: 20}}>Back to Dashboard</Link>
       <p style={{ opacity: 0.7 }}>Enter a ticker and fetch a real-time quote and recent intraday candles.</p>
       <div style={{ display: 'flex', gap: 8 }}>
         <input value={symbol} onChange={e => setSymbol(e.target.value.toUpperCase())} placeholder="Symbol (e.g. AAPL)" />
-        <button onClick={run} disabled={loading}>{loading ? 'Loading…' : 'Fetch'}</button>
+        <button onClick={() => run(symbol)} disabled={loading}>{loading ? 'Loading…' : 'Fetch'}</button>
       </div>
       {error && <p style={{ color: 'crimson' }}>{error}</p>}
 
@@ -75,3 +97,34 @@ export default function App() {
     </div>
   )
 }
+
+import { Link } from 'react-router-dom'
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/" element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          } />
+           <Route path="/quote/:symbol" element={
+            <ProtectedRoute>
+              <StockView />
+            </ProtectedRoute>
+          } />
+           <Route path="/quote" element={
+            <ProtectedRoute>
+              <StockView />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  )
+}
+
