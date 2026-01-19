@@ -19,7 +19,3 @@
 
 # Environment Variables
 .env
-
-# Verify Auth
-/backend/verify_auth.py
-/backend/verify_auth.sh
