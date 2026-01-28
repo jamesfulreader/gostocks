@@ -10,13 +10,17 @@ export default function DashboardPage() {
   const { user, logout } = useAuth()
 
   useEffect(() => {
-    loadPortfolio()
-  }, [])
+    if (user) {
+      loadPortfolio()
+    } else {
+      setLoading(false)
+    }
+  }, [user])
 
   const loadPortfolio = async () => {
     try {
       const data = await getPortfolio()
-        setPortfolio(data || []) // Handle null response if portfolio is empty
+      setPortfolio(data || []) 
     } catch (e) {
       console.error(e)
     } finally {
@@ -47,10 +51,43 @@ export default function DashboardPage() {
 
   if (loading) return <div>Loading...</div>
 
+  // Guest View
+  if (!user) {
+    return (
+      <div style={{ padding: 40, maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
+        <h1 style={{ fontSize: '2.5rem', marginBottom: 20 }}>Welcome to GoStocks</h1>
+        <p style={{ fontSize: '1.2rem', color: '#666', marginBottom: 40 }}>
+          Track your favorite stocks and manage your portfolio in real-time.
+        </p>
+        <div style={{ display: 'flex', gap: 20, justifyContent: 'center' }}>
+          <Link to="/login" style={{ 
+             display: 'inline-block',
+             padding: '12px 24px', 
+             background: '#007bff', 
+             color: 'white', 
+             borderRadius: 6, 
+             textDecoration: 'none',
+             fontWeight: 'bold'
+           }}>Login</Link>
+           <Link to="/register" style={{ 
+             display: 'inline-block',
+             padding: '12px 24px', 
+             border: '2px solid #007bff', 
+             color: '#007bff', 
+             borderRadius: 6, 
+             textDecoration: 'none',
+             fontWeight: 'bold'
+           }}>Register</Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Authenticated View
   return (
     <div style={{ padding: 20, maxWidth: 800, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Welcome, {user?.email}</h1>
+        <h1>Welcome, {user.email}</h1>
         <button onClick={logout}>Logout</button>
       </div>
 

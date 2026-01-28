@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { createContext, useContext, useState, type ReactNode } from 'react'
 import type { User } from '../types'
 
 interface AuthContextType {
@@ -12,19 +12,17 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const storedUser = localStorage.getItem('user')
+      return storedUser ? JSON.parse(storedUser) : null
+    } catch {
+      return null
+    }
+  })
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'))
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user')
-    if (storedUser) {
-        try {
-            setUser(JSON.parse(storedUser))
-        } catch (e) {
-            console.error("Failed to parse user from local storage", e)
-        }
-    }
-  }, [])
+  // Removed useEffect for loading user since it's now synchronous
 
   const login = (newToken: string, newUser: User) => {
     setToken(newToken)

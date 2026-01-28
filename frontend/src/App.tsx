@@ -107,11 +107,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/" element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          } />
+          <Route path="/" element={<DashboardPage />} />
            <Route path="/quote/:symbol" element={
             <ProtectedRoute>
               <StockView />
