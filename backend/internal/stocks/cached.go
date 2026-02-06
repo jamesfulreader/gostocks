@@ -61,18 +61,20 @@ func (c *CachedProvider) Quote(ctx context.Context, symbol string) (*Quote, erro
 		return nil, err
 	}
 
-	// 3. Save to DB (Async to not block response?) - Synchronous for now for data integrity
+	// 3. Save to DB
+	// Ensure symbol exists (Synchronous to satisfy foreign key constraints immediately)
+	if err := c.DB.UpsertSymbol(ctx, database.Symbol{
+		Symbol: q.Symbol,
+		Name:   q.Symbol, // We don't have name from Quote, using Symbol as placeholder
+		Type:   "Unknown",
+	}); err != nil {
+		log.Printf("Failed to upsert symbol %s: %v", q.Symbol, err)
+	}
+
 	go func(val *Quote) {
 		// Create a detached context for the db operation
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-
-		// Ensure symbol exists
-		_ = c.DB.UpsertSymbol(ctx, database.Symbol{
-			Symbol: val.Symbol,
-			Name:   val.Symbol, // We don't have name from Quote, using Symbol as placeholder
-			Type:   "Unknown",
-		})
 
 		// Save price
 		ts := time.Now()

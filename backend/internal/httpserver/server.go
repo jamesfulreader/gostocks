@@ -32,7 +32,7 @@ func New(provider stocks.Provider, db *pgxpool.Pool, addr string) *Server {
 	router.Use(cors.New(config))
 
 	userRepo := users.NewPostgresRepository(db)
-	userService := users.NewService(userRepo)
+	userService := users.NewService(userRepo, provider)
 
 	s := &Server{
 		addr:        addr,
